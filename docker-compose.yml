@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:7
+    container_name: taskflow-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  server:
+    build: ./server
+    container_name: taskflow-server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - mongo
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  mongo-data:
