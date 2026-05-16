@@ -15,10 +15,16 @@ const taskSchema = new mongoose.Schema({
     enum: ['à faire', 'en cours', 'terminé'],
     default: 'à faire'
   },
+  dueDate: { type: Date, default: null },
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
     required: true
+  },
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, { timestamps: true });
 
