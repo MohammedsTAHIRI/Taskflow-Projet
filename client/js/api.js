@@ -19,10 +19,7 @@ const api = {
     return data;
   },
 
-  // Auth
   register: (userData) => api.request('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => api.request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
-  
-  // Route protégée exemple
   getMe: () => api.request('/auth/me')
 };
