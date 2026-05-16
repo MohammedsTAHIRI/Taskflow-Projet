@@ -7,26 +7,24 @@
   <style>
     .tasks-container { max-width: 900px; margin: 5rem auto 2rem; padding: 1rem; }
     .task-card { background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .task-meta { font-size: 0.85rem; color: #666; margin: 0.4rem 0; display: flex; gap: 1rem; }
+    .task-meta { font-size: 0.85rem; color: #666; margin: 0.3rem 0; }
     .task-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; }
     .priority-haute { color: #dc3545; font-weight: bold; }
     .priority-moyenne { color: #ffc107; font-weight: bold; }
     .priority-basse { color: #28a745; font-weight: bold; }
     .status-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; background: #e9ecef; }
-    nav a { color: #667eea; text-decoration: none; margin-right: 1rem; }
-    .form-card { background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .form-card, .filter-card, .members-section { background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-group { margin-bottom: 0.8rem; }
     .form-group label { display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.9rem; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem;
-    }
-
-    /* Membres */
-    .members-section { background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
+    .filter-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-end; }
+    .filter-row .form-group { margin: 0; flex: 1; min-width: 130px; }
     .member-item { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #eee; }
     .invite-row { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
     .invite-row input { flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+    #pagination { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 1rem; padding: 0.5rem; }
+    nav a { color: #667eea; text-decoration: none; margin-right: 1rem; }
   </style>
 </head>
 <body>
@@ -42,88 +40,107 @@
   <div class="tasks-container">
     <h1>Tâches du projet</h1>
 
-    <!-- Section Membres (Fonctionnalité 4) -->
+    <!-- Membres -->
     <div class="members-section" id="members-section">
-      <h3>👥 Membres du projet</h3>
+      <h3>👥 Membres</h3>
       <div id="members-list"><em>Chargement...</em></div>
       <div class="invite-row" id="invite-row" style="display:none">
-        <input type="email" id="invite-email" placeholder="Email de l'utilisateur à inviter">
+        <input type="email" id="invite-email" placeholder="Email à inviter">
         <button onclick="inviteMember()">Inviter</button>
       </div>
     </div>
 
-    <!-- Formulaire nouvelle tâche -->
+    <!-- Formulaire nouvelle tâche (owner seulement) -->
     <div class="form-card" id="task-form-section" style="display:none">
       <h3>➕ Nouvelle tâche</h3>
       <form id="task-form">
-        <div class="form-group">
-          <label>Titre *</label>
-          <input type="text" id="task-title" required>
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea id="task-description" rows="2"></textarea>
-        </div>
+        <div class="form-group"><label>Titre *</label><input type="text" id="task-title" required></div>
+        <div class="form-group"><label>Description</label><textarea id="task-description" rows="2"></textarea></div>
         <div class="form-row">
           <div class="form-group">
             <label>Priorité *</label>
-            <select id="task-priority" required>
+            <select id="task-priority">
               <option value="basse">Basse</option>
               <option value="moyenne" selected>Moyenne</option>
               <option value="haute">Haute</option>
             </select>
           </div>
-          <!-- Menu déroulant membres (Fonctionnalité 4) -->
           <div class="form-group">
             <label>Assigner à</label>
-            <select id="assignedTo">
-              <option value="">-- Non assigné --</option>
-            </select>
+            <select id="assignedTo"><option value="">-- Non assigné --</option></select>
           </div>
         </div>
         <button type="submit">Créer la tâche</button>
       </form>
     </div>
 
+    <!-- Filtrage & Recherche (F6) -->
+    <div class="filter-card">
+      <h3>🔍 Filtrer les tâches</h3>
+      <div class="filter-row">
+        <div class="form-group">
+          <label>Recherche</label>
+          <input type="text" id="filter-search" placeholder="Titre ou description...">
+        </div>
+        <div class="form-group">
+          <label>Statut</label>
+          <select id="filter-status">
+            <option value="">Tous</option>
+            <option value="à faire">À faire</option>
+            <option value="en cours">En cours</option>
+            <option value="terminé">Terminé</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priorité</label>
+          <select id="filter-priority">
+            <option value="">Toutes</option>
+            <option value="haute">Haute</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="basse">Basse</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Membre</label>
+          <select id="filter-member"><option value="">Tous</option></select>
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button id="filter-reset" style="width:100%">↺ Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Liste des tâches -->
     <div id="tasks-list"><em>Chargement...</em></div>
+    <div id="pagination"></div>
   </div>
 
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/tasks.js"></script>
   <script>
-    // Gestion membres (Fonctionnalité 4)
     async function loadMembersList() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const projectId = urlParams.get('project');
+      const projectId = new URLSearchParams(window.location.search).get('project');
       if (!projectId) return;
-
       try {
         const [members, project] = await Promise.all([
           api.request(`/projects/${projectId}/members`),
           api.request(`/projects/${projectId}`)
         ]);
-
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         const isOwner = project.owner._id === user?.id || project.owner === user?.id;
-
-        // Afficher formulaire de création uniquement pour le owner
         if (isOwner) {
           document.getElementById('task-form-section').style.display = 'block';
           document.getElementById('invite-row').style.display = 'flex';
         }
-
-        const container = document.getElementById('members-list');
-        container.innerHTML = members.map(m => `
+        document.getElementById('members-list').innerHTML = members.map(m => `
           <div class="member-item">
             <span>👤 <strong>${m.fullName}</strong> — ${m.email} <small>(${m.role === 'owner' ? 'Créateur' : 'Membre'})</small></span>
             ${isOwner && m.role !== 'owner' ? `<button onclick="removeMember('${projectId}', '${m._id}')">Retirer</button>` : ''}
           </div>
         `).join('');
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) { console.error(err); }
     }
 
     async function inviteMember() {
@@ -131,16 +148,12 @@
       const projectId = new URLSearchParams(window.location.search).get('project');
       if (!email) return alert('Entrez un email');
       try {
-        const res = await api.request(`/projects/${projectId}/members`, {
-          method: 'POST',
-          body: JSON.stringify({ email })
-        });
+        const res = await api.request(`/projects/${projectId}/members`, { method: 'POST', body: JSON.stringify({ email }) });
         alert(res.message);
         document.getElementById('invite-email').value = '';
-        await Promise.all([loadMembersList(), window.loadMembers && loadMembers()]);
-      } catch (err) {
-        alert(err.message);
-      }
+        await loadMembersList();
+        if (window.loadMembers) await loadMembers();
+      } catch (err) { alert(err.message); }
     }
 
     async function removeMember(projectId, memberId) {
@@ -149,9 +162,7 @@
         const res = await api.request(`/projects/${projectId}/members/${memberId}`, { method: 'DELETE' });
         alert(res.message);
         await loadMembersList();
-      } catch (err) {
-        alert(err.message);
-      }
+      } catch (err) { alert(err.message); }
     }
 
     document.addEventListener('DOMContentLoaded', loadMembersList);
