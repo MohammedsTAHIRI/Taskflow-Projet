@@ -13,7 +13,11 @@ const projectSchema = new mongoose.Schema({
     type: String,
     enum: ['actif', 'en pause', 'archivé'],
     default: 'actif'
-  }
+  },
+  members: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, { timestamps: true });
 
 // Cascade delete: supprime les tâches liées avant suppression du projet
