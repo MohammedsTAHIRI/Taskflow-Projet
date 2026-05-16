@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .dashboard { max-width: 900px; margin: 5rem auto 2rem; padding: 1rem; }
+    nav a { color: #667eea; text-decoration: none; margin-right: 1rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span id="user-display"></span>
+    <div>
+      <a href="projects.html">Mes Projets</a>
+      <button id="logout-btn">Déconnexion</button>
+    </div>
+  </nav>
+  <div class="dashboard">
+    <h1>Bienvenue sur TaskFlow</h1>
+    <p>Accédez à vos <a href="projects.html">projets</a> pour gérer vos tâches.</p>
+  </div>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
