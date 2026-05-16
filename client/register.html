@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Inscription - TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>TaskFlow</h1>
+    <form id="register-form">
+      <input type="text" id="fullName" placeholder="Nom complet" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Mot de passe" required minlength="6">
+      <button type="submit">Créer un compte</button>
+    </form>
+    <p>Déjà un compte ? <a href="login.html">Se connecter</a></p>
+  </div>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
