@@ -4,6 +4,7 @@ const Task = require('../models/Task');
 const Project = require('../models/Project');
 const authMiddleware = require('../middleware/auth');
 const { validateTask, validateStatusUpdate } = require('../middleware/validation');
+const logActivity = require('../utils/logActivity');
 
 router.get('/project/:id', authMiddleware, async (req, res) => {
   try {
@@ -25,22 +26,28 @@ router.get('/project/:id', authMiddleware, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const [tasks, total] = await Promise.all([
-      Task.find(filter).populate('assignedTo', 'fullName email').sort({ createdAt: -1 }).skip((page-1)*limit).limit(limit),
+      Task.find(filter).populate('assignedTo', 'fullName email').sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
       Task.countDocuments(filter)
     ]);
     res.json({ data: tasks, total, page, totalPages: Math.ceil(total / limit) });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.user.userId })
-      .populate('project', 'title').populate('assignedTo', 'fullName email').sort({ createdAt: -1 });
+      .populate('project', 'title')
+      .populate('assignedTo', 'fullName email')
+      .sort({ createdAt: -1 });
     res.json(tasks);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// POST — owner seulement (F8)
+// POST — enregistre task_created (F9)
 router.post('/', authMiddleware, validateTask, async (req, res) => {
   try {
     const { title, description, priority, status, project, assignedTo } = req.body;
@@ -54,11 +61,16 @@ router.post('/', authMiddleware, validateTask, async (req, res) => {
     }
     const task = new Task({ title, description, priority, status, project, assignedTo: assignedTo || null });
     await task.save();
+
+    // Log activité (F9)
+    await logActivity('task_created', project, req.user.userId, { taskTitle: title });
+
     res.status(201).json(await task.populate('assignedTo', 'fullName email'));
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// PUT — owner seulement (F8)
 router.put('/:id', authMiddleware, validateTask, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id).populate('project');
@@ -73,22 +85,33 @@ router.put('/:id', authMiddleware, validateTask, async (req, res) => {
     if (assignedTo !== undefined) task.assignedTo = assignedTo || null;
     await task.save();
     res.json(await task.populate('assignedTo', 'fullName email'));
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// DELETE — owner seulement (F8)
+// DELETE — enregistre task_deleted (F9)
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id).populate('project');
     if (!task) return res.status(404).json({ message: 'Tâche non trouvée' });
     if (task.project.owner.toString() !== req.user.userId)
       return res.status(403).json({ message: 'Seul le créateur peut supprimer des tâches' });
+
+    const projectId = task.project._id;
+    const taskTitle = task.title;
     await task.deleteOne();
+
+    // Log activité (F9)
+    await logActivity('task_deleted', projectId, req.user.userId, { taskTitle });
+
     res.json({ message: 'Tâche supprimée' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// PATCH status — owner OU membre assigné seulement (F8)
+// PATCH status — enregistre task_status_changed (F9)
 router.patch('/:id/status', authMiddleware, validateStatusUpdate, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id).populate('project');
@@ -97,10 +120,22 @@ router.patch('/:id/status', authMiddleware, validateStatusUpdate, async (req, re
     const isAssigned = task.assignedTo && task.assignedTo.toString() === req.user.userId;
     if (!isOwner && !isAssigned)
       return res.status(403).json({ message: 'Vous ne pouvez modifier que le statut de vos tâches assignées' });
+
+    const oldStatus = task.status;
     task.status = req.body.status;
     await task.save();
+
+    // Log activité (F9)
+    await logActivity('task_status_changed', task.project._id, req.user.userId, {
+      taskTitle: task.title,
+      from: oldStatus,
+      to: req.body.status
+    });
+
     res.json(task);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;

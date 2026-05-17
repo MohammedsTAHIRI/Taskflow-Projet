@@ -12,9 +12,10 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('MongoDB erreur:', err));
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/tasks', require('./routes/tasks'));
-app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api', require('./routes/activities'));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Serveur sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
