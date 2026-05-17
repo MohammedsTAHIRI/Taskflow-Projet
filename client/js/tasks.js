@@ -2,8 +2,6 @@ let currentProjectId = null;
 let projectMembers = [];
 let currentPage = 1;
 let totalPages = 1;
-
-// Filtres actifs
 let activeFilters = { status: '', priority: '', assignedTo: '', search: '' };
 
 async function init() {
@@ -24,9 +22,7 @@ async function loadMembers() {
     projectMembers = await api.request(`/projects/${currentProjectId}/members`);
     populateMemberSelect();
     populateFilterMemberSelect();
-  } catch (err) {
-    console.error('Erreur membres:', err.message);
-  }
+  } catch (err) { console.error('Erreur membres:', err.message); }
 }
 
 function populateMemberSelect() {
@@ -60,22 +56,16 @@ async function loadTasks() {
     if (activeFilters.priority) params.append('priority', activeFilters.priority);
     if (activeFilters.assignedTo) params.append('assignedTo', activeFilters.assignedTo);
     if (activeFilters.search) params.append('search', activeFilters.search);
-
     const data = await api.request(`/tasks/project/${currentProjectId}?${params}`);
     totalPages = data.totalPages || 1;
     renderTasks(data.data);
     renderPagination();
-  } catch (err) {
-    alert(err.message);
-  }
+  } catch (err) { alert(err.message); }
 }
 
 function renderTasks(tasks) {
   const container = document.getElementById('tasks-list');
-  if (!tasks.length) {
-    container.innerHTML = '<p style="color:#888;text-align:center;padding:1rem;">Aucune tâche trouvée.</p>';
-    return;
-  }
+  if (!tasks.length) { container.innerHTML = '<p style="color:#888;text-align:center;padding:1rem;">Aucune tâche trouvée.</p>'; return; }
   container.innerHTML = tasks.map(t => `
     <div class="task-card">
       <div>
@@ -84,10 +74,7 @@ function renderTasks(tasks) {
         <span class="status-badge">${t.status}</span>
       </div>
       ${t.description ? `<div class="task-meta"><em>${t.description}</em></div>` : ''}
-      <div class="task-meta">
-        👤 ${t.assignedTo ? t.assignedTo.fullName : 'Non assigné'}
-        ${t.dueDate ? ` · 📅 ${new Date(t.dueDate).toLocaleDateString('fr-FR')}` : ''}
-      </div>
+      <div class="task-meta">👤 ${t.assignedTo ? t.assignedTo.fullName : 'Non assigné'}${t.dueDate ? ` · 📅 ${new Date(t.dueDate).toLocaleDateString('fr-FR')}` : ''}</div>
       <div class="task-actions">
         <select onchange="updateStatus('${t._id}', this.value)">
           <option ${t.status==='à faire'?'selected':''}>à faire</option>
@@ -105,9 +92,9 @@ function renderPagination() {
   if (!container) return;
   if (totalPages <= 1) { container.innerHTML = ''; return; }
   container.innerHTML = `
-    <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Préc.</button>
+    <button onclick="goToPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Préc.</button>
     <span>Page ${currentPage} / ${totalPages}</span>
-    <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Suiv. →</button>
+    <button onclick="goToPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Suiv. →</button>
   `;
 }
 
@@ -118,39 +105,83 @@ function goToPage(page) {
 }
 
 function setupFilters() {
-  const searchInput = document.getElementById('filter-search');
-  const statusSelect = document.getElementById('filter-status');
-  const prioritySelect = document.getElementById('filter-priority');
-  const memberSelect = document.getElementById('filter-member');
-  const resetBtn = document.getElementById('filter-reset');
-
   const applyFilters = () => {
     currentPage = 1;
-    activeFilters.search = searchInput ? searchInput.value.trim() : '';
-    activeFilters.status = statusSelect ? statusSelect.value : '';
-    activeFilters.priority = prioritySelect ? prioritySelect.value : '';
-    activeFilters.assignedTo = memberSelect ? memberSelect.value : '';
+    activeFilters.search = document.getElementById('filter-search')?.value.trim() || '';
+    activeFilters.status = document.getElementById('filter-status')?.value || '';
+    activeFilters.priority = document.getElementById('filter-priority')?.value || '';
+    activeFilters.assignedTo = document.getElementById('filter-member')?.value || '';
     loadTasks();
   };
-
-  if (searchInput) searchInput.addEventListener('input', applyFilters);
-  if (statusSelect) statusSelect.addEventListener('change', applyFilters);
-  if (prioritySelect) prioritySelect.addEventListener('change', applyFilters);
-  if (memberSelect) memberSelect.addEventListener('change', applyFilters);
-  if (resetBtn) resetBtn.addEventListener('click', () => {
+  document.getElementById('filter-search')?.addEventListener('input', applyFilters);
+  document.getElementById('filter-status')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-priority')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-member')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-reset')?.addEventListener('click', () => {
     activeFilters = { status: '', priority: '', assignedTo: '', search: '' };
-    if (searchInput) searchInput.value = '';
-    if (statusSelect) statusSelect.value = '';
-    if (prioritySelect) prioritySelect.value = '';
-    if (memberSelect) memberSelect.value = '';
+    ['filter-search','filter-status','filter-priority','filter-member'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
     currentPage = 1;
     loadTasks();
   });
 }
 
+// ============================================================
+// F7 — Sauvegarde automatique des brouillons (LocalStorage)
+// ============================================================
+const DRAFT_KEY = () => `draft_task_${currentProjectId}`;
+
+function saveDraft() {
+  const draft = {
+    title: document.getElementById('task-title')?.value || '',
+    description: document.getElementById('task-description')?.value || '',
+    priority: document.getElementById('task-priority')?.value || 'moyenne',
+    assignedTo: document.getElementById('assignedTo')?.value || ''
+  };
+  localStorage.setItem(DRAFT_KEY(), JSON.stringify(draft));
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY());
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    const hasDraft = draft.title || draft.description;
+    if (!hasDraft) return;
+
+    const restore = confirm(
+      `📋 Un brouillon a été trouvé :\n"${draft.title || '(sans titre)'}"\n\nVoulez-vous le restaurer ?`
+    );
+    if (restore) {
+      document.getElementById('task-title').value = draft.title || '';
+      document.getElementById('task-description').value = draft.description || '';
+      document.getElementById('task-priority').value = draft.priority || 'moyenne';
+      if (draft.assignedTo) document.getElementById('assignedTo').value = draft.assignedTo;
+    } else {
+      localStorage.removeItem(DRAFT_KEY());
+    }
+  } catch (e) { localStorage.removeItem(DRAFT_KEY()); }
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY());
+}
+
 function setupForm() {
   const form = document.getElementById('task-form');
   if (!form) return;
+
+  // Charger brouillon éventuel
+  loadDraft();
+
+  // Sauvegarde automatique sur chaque input (F7)
+  ['task-title', 'task-description', 'task-priority', 'assignedTo'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', saveDraft);
+    document.getElementById(id)?.addEventListener('change', saveDraft);
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
@@ -165,6 +196,7 @@ function setupForm() {
           assignedTo: document.getElementById('assignedTo').value || undefined
         })
       });
+      clearDraft();   // Supprimer le brouillon après soumission réussie
       form.reset();
       populateMemberSelect();
       currentPage = 1;
@@ -175,17 +207,13 @@ function setupForm() {
 
 async function deleteTask(taskId) {
   if (!confirm('Supprimer cette tâche ?')) return;
-  try {
-    await api.request(`/tasks/${taskId}`, { method: 'DELETE' });
-    await loadTasks();
-  } catch (err) { alert(err.message); }
+  try { await api.request(`/tasks/${taskId}`, { method: 'DELETE' }); await loadTasks(); }
+  catch (err) { alert(err.message); }
 }
 
 async function updateStatus(taskId, status) {
-  try {
-    await api.request(`/tasks/${taskId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
-    await loadTasks();
-  } catch (err) { alert(err.message); }
+  try { await api.request(`/tasks/${taskId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); await loadTasks(); }
+  catch (err) { alert(err.message); }
 }
 
 document.addEventListener('DOMContentLoaded', init);
