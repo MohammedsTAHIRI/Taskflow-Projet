@@ -4,37 +4,12 @@
   <meta charset="UTF-8">
   <title>Mes Projets - TaskFlow</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .projects-container { max-width: 900px; margin: 2rem auto; padding: 1rem; }
-    .project-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
-    .project-info h3 { margin: 0 0 0.5rem; color: #333; }
-    .project-info p { margin: 0; color: #666; font-size: 0.9rem; }
-    .project-actions button { margin-left: 0.5rem; padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
-    .btn-edit { background: #ffc107; color: #000; }
-    .btn-delete { background: #dc3545; color: #fff; }
-    .btn-add { background: #28a745; color: #fff; padding: 0.8rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 1rem; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px; }
-    .modal-content input, .modal-content textarea, .modal-content select { width: 100%; padding: 0.6rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 6px; }
-    .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem; }
-    .pagination button { padding: 0.4rem 0.8rem; border: 1px solid #667eea; background: white; color: #667eea; border-radius: 4px; cursor: pointer; }
-    .pagination button.active { background: #667eea; color: white; }
-    .notif-wrapper { position: relative; display: inline-block; }
-    .notif-bell { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 4px; position: relative; }
-    #notif-badge { background: #dc3545; color: white; border-radius: 50%; font-size: 10px; padding: 1px 5px; position: absolute; top: -4px; right: -4px; display: none; }
-    #notif-dropdown { position: absolute; right: 0; top: 130%; width: 300px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 350px; overflow-y: auto; }
-    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-    .notif-item.unread { background: #f0f4ff; }
-    .notif-msg { font-size: 0.83rem; color: #333; flex: 1; }
-    .notif-read-btn { font-size: 0.75rem; background: #667eea; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; white-space: nowrap; }
-    .notif-read-label { font-size: 0.75rem; color: #aaa; }
-  </style>
 </head>
 <body>
   <nav>
-    <span id="user-display"></span>
-    <div>
+    <span class="brand">TaskFlow</span>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <span id="user-display"></span>
       <a href="index.html">Tableau de bord</a>
       <div class="notif-wrapper">
         <button class="notif-bell" onclick="toggleNotifDropdown()" aria-label="Notifications">🔔<span id="notif-badge"></span></button>
@@ -44,9 +19,11 @@
     </div>
   </nav>
 
-  <div class="projects-container">
-    <h1>Mes Projets</h1>
-    <button class="btn-add" onclick="openModal()">+ Nouveau Projet</button>
+  <div class="section">
+    <div class="flex-between" style="margin-bottom:1.2rem">
+      <h1 style="color:var(--light)">Mes Projets</h1>
+      <button onclick="openModal()">+ Nouveau Projet</button>
+    </div>
     <div id="projects-list"></div>
     <div class="pagination" id="pagination"></div>
   </div>
@@ -65,8 +42,10 @@
           <option value="en pause">En pause</option>
           <option value="archivé">Archivé</option>
         </select>
-        <button type="submit">Enregistrer</button>
-        <button type="button" onclick="closeModal()" style="background:#6c757d;color:#fff;">Annuler</button>
+        <div style="display:flex;gap:.7rem;margin-top:.5rem">
+          <button type="submit">Enregistrer</button>
+          <button type="button" class="btn-danger" onclick="closeModal()">Annuler</button>
+        </div>
       </form>
     </div>
   </div>

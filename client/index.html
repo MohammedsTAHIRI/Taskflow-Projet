@@ -4,37 +4,12 @@
   <meta charset="UTF-8">
   <title>Tableau de bord - TaskFlow</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .dashboard { max-width: 1000px; margin: 5rem auto 2rem; padding: 1rem; }
-    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
-    .metric-card { background: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .metric-card h2 { font-size: 2.5rem; margin: 0; color: #667eea; }
-    .metric-card p { margin: 0.5rem 0 0; color: #666; }
-    .metric-card.late h2 { color: #dc3545; }
-    .tasks-section { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .tasks-section h2 { margin-bottom: 1rem; color: #333; }
-    .task-item { display: flex; justify-content: space-between; padding: 0.8rem; border-bottom: 1px solid #eee; }
-    .task-item:last-child { border-bottom: none; }
-    .priority-haute { color: #dc3545; font-weight: bold; }
-    .priority-moyenne { color: #ffc107; font-weight: bold; }
-    .priority-basse { color: #28a745; font-weight: bold; }
-    nav a { color: #667eea; text-decoration: none; margin-right: 1rem; font-weight: 500; }
-    nav a:hover { text-decoration: underline; }
-    .notif-wrapper { position: relative; display: inline-block; }
-    .notif-bell { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 4px; position: relative; }
-    #notif-badge { background: #dc3545; color: white; border-radius: 50%; font-size: 10px; padding: 1px 5px; position: absolute; top: -4px; right: -4px; display: none; }
-    #notif-dropdown { position: absolute; right: 0; top: 130%; width: 300px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 350px; overflow-y: auto; }
-    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-    .notif-item.unread { background: #f0f4ff; }
-    .notif-msg { font-size: 0.83rem; color: #333; flex: 1; }
-    .notif-read-btn { font-size: 0.75rem; background: #667eea; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; white-space: nowrap; }
-    .notif-read-label { font-size: 0.75rem; color: #aaa; }
-  </style>
 </head>
 <body>
   <nav>
-    <span id="user-display"></span>
-    <div>
+    <span class="brand">TaskFlow</span>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <span id="user-display"></span>
       <a href="projects.html">Mes Projets</a>
       <div class="notif-wrapper">
         <button class="notif-bell" onclick="toggleNotifDropdown()" aria-label="Notifications">🔔<span id="notif-badge"></span></button>
@@ -45,30 +20,30 @@
   </nav>
 
   <div class="dashboard">
-    <h1>Tableau de bord</h1>
-    
+    <h1 style="margin-bottom:1.5rem;color:var(--light)">Tableau de bord</h1>
+
     <div class="metrics">
       <div class="metric-card">
-        <h2 id="active-projects">0</h2>
+        <h2 id="active-projects">—</h2>
         <p>Projets actifs</p>
       </div>
       <div class="metric-card">
-        <h2 id="assigned-tasks">0</h2>
+        <h2 id="assigned-tasks">—</h2>
         <p>Tâches assignées</p>
       </div>
       <div class="metric-card">
-        <h2 id="completed-tasks">0</h2>
+        <h2 id="completed-tasks">—</h2>
         <p>Tâches terminées</p>
       </div>
       <div class="metric-card late">
-        <h2 id="late-tasks">0</h2>
+        <h2 id="late-tasks">—</h2>
         <p>Tâches en retard</p>
       </div>
     </div>
 
     <div class="tasks-section">
       <h2>Tâches en cours (priorité ↓)</h2>
-      <div id="ongoing-tasks"></div>
+      <div id="ongoing-tasks"><em style="color:var(--text-muted)">Chargement...</em></div>
     </div>
   </div>
 

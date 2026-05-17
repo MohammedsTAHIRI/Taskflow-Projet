@@ -14,18 +14,19 @@ async function loadProjects(page = 1) {
 function renderProjects(projects) {
   const container = document.getElementById('projects-list');
   if (!projects.length) {
-    container.innerHTML = '<p>Aucun projet trouvé.</p>';
+    container.innerHTML = '<p style="color:var(--text-muted)">Aucun projet trouvé.</p>';
     return;
   }
   container.innerHTML = projects.map(p => `
     <div class="project-card">
       <div class="project-info">
         <h3>${p.title}</h3>
-        <p>${p.description || 'Pas de description'} — 
-           <strong>${p.status}</strong> — 
+        <p>${p.description || 'Pas de description'} —
+           <strong>${p.status}</strong> —
            ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Sans deadline'}</p>
       </div>
       <div class="project-actions">
+        <a href="tasks.html?project=${p._id}" class="btn btn-tasks">Voir les tâches</a>
         <button class="btn-edit" onclick="editProject('${p._id}', '${p.title}', '${p.description||''}', '${p.deadline||''}', '${p.status}')">Modifier</button>
         <button class="btn-delete" onclick="deleteProject('${p._id}')">Supprimer</button>
       </div>
@@ -96,29 +97,4 @@ document.getElementById('project-form').addEventListener('submit', async (e) => 
   }
 });
 
-function renderProjects(projects) {
-  const container = document.getElementById('projects-list');
-  if (!projects.length) {
-    container.innerHTML = '<p>Aucun projet trouvé.</p>';
-    return;
-  }
-  container.innerHTML = projects.map(p => `
-    <div class="project-card">
-      <div class="project-info">
-        <h3>${p.title}</h3>
-        <p>${p.description || 'Pas de description'} — 
-           <strong>${p.status}</strong> — 
-           ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Sans deadline'}</p>
-      </div>
-      <div class="project-actions">
-        <a href="tasks.html?project=${p._id}" class="btn-tasks" style="background:#667eea;color:#fff;padding:0.4rem 0.8rem;border-radius:4px;text-decoration:none;">Voir les tâches</a>
-        <button class="btn-edit" onclick="editProject('${p._id}', '${p.title}', '${p.description||''}', '${p.deadline||''}', '${p.status}')">Modifier</button>
-        <button class="btn-delete" onclick="deleteProject('${p._id}')">Supprimer</button>
-      </div>
-    </div>
-  `).join('');
-}
-
 document.addEventListener('DOMContentLoaded', () => loadProjects());
-
-
