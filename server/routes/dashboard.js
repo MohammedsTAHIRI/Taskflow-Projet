@@ -20,13 +20,10 @@ router.get('/', authMiddleware, async (req, res) => {
     // 1. عدد المشاريع النشطة
     const activeProjects = activeProjectIds.length;
 
-    // 2+3+4: تاسكات تخص المستخدم — إما assignedTo هو، أو هو owner المشروع وما في أحد assigned
+    // 2+3+4: tâches assignées à l'utilisateur connecté uniquement
     const taskFilter = {
       project: { $in: projectIds },
-      $or: [
-        { assignedTo: userId },
-        { assignedTo: null }
-      ]
+      assignedTo: userId
     };
 
     const [assignedTasks, completedTasks, lateTasks] = await Promise.all([
@@ -39,13 +36,13 @@ router.get('/', authMiddleware, async (req, res) => {
       })
     ]);
 
-    // 5. تاسكات جارية — مرتبة بالأولوية ثم dueDate
+    // 5. Tâches en cours — triées par priorité décroissante puis dueDate croissante
     const ongoingTasks = await Task.aggregate([
       {
         $match: {
           project: { $in: projectIds },
           status: { $in: ['à faire', 'en cours'] },
-          $or: [{ assignedTo: userId }, { assignedTo: null }]
+          assignedTo: userId
         }
       },
       {
@@ -72,7 +69,7 @@ router.get('/', authMiddleware, async (req, res) => {
           as: 'project'
         }
       },
-      { $unwind: { path: '$project', preserveNullAndEmpty: true } },
+      { $unwind: { path: '$project', preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'users',
@@ -82,7 +79,7 @@ router.get('/', authMiddleware, async (req, res) => {
         }
       },
       {
-        $unwind: { path: '$assignedToUser', preserveNullAndEmpty: true }
+        $unwind: { path: '$assignedToUser', preserveNullAndEmptyArrays: true }
       },
       {
         $project: {

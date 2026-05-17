@@ -4,47 +4,12 @@
   <meta charset="UTF-8">
   <title>Tâches - TaskFlow</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    .tasks-container { max-width: 900px; margin: 5rem auto 2rem; padding: 1rem; }
-    .task-card { background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .task-meta { font-size: 0.85rem; color: #666; margin: 0.3rem 0; }
-    .task-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; }
-    .priority-haute { color: #dc3545; font-weight: bold; }
-    .priority-moyenne { color: #ffc107; font-weight: bold; }
-    .priority-basse { color: #28a745; font-weight: bold; }
-    .status-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; background: #e9ecef; }
-    .form-card, .filter-card, .members-section { background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-group { margin-bottom: 0.8rem; }
-    .form-group label { display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.9rem; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; }
-    .filter-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-end; }
-    .filter-row .form-group { margin: 0; flex: 1; min-width: 130px; }
-    .member-item { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #eee; }
-    .invite-row { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
-    .invite-row input { flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
-    #pagination { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 1rem; padding: 0.5rem; }
-    .activity-item { display: flex; gap: 12px; padding: 0.6rem 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; }
-    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: #667eea; margin-top: 6px; flex-shrink: 0; }
-    .activity-content { font-size: 0.85rem; color: #444; line-height: 1.5; }
-    .activity-time { color: #aaa; margin-left: 8px; font-size: 0.8rem; }
-    .activity-section { background: white; padding: 1.5rem; border-radius: 8px; margin-top: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    nav a { color: #667eea; text-decoration: none; margin-right: 1rem; }
-    .notif-wrapper { position: relative; display: inline-block; }
-    .notif-bell { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 4px; position: relative; }
-    #notif-badge { background: #dc3545; color: white; border-radius: 50%; font-size: 10px; padding: 1px 5px; position: absolute; top: -4px; right: -4px; display: none; }
-    #notif-dropdown { position: absolute; right: 0; top: 130%; width: 300px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 350px; overflow-y: auto; }
-    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-    .notif-item.unread { background: #f0f4ff; }
-    .notif-msg { font-size: 0.83rem; color: #333; flex: 1; }
-    .notif-read-btn { font-size: 0.75rem; background: #667eea; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; white-space: nowrap; }
-    .notif-read-label { font-size: 0.75rem; color: #aaa; }
-  </style>
 </head>
 <body>
   <nav>
-    <span id="user-display"></span>
-    <div>
+    <span class="brand">TaskFlow</span>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <span id="user-display"></span>
       <a href="index.html">Dashboard</a>
       <a href="projects.html">Projets</a>
       <div class="notif-wrapper">
@@ -55,25 +20,31 @@
     </div>
   </nav>
 
-  <div class="tasks-container">
-    <h1>Tâches du projet</h1>
+  <div class="section">
+    <h1 style="color:var(--light);margin-bottom:1.2rem">Tâches du projet</h1>
 
     <!-- Membres -->
-    <div class="members-section" id="members-section">
+    <div class="card" id="members-section">
       <h3>👥 Membres</h3>
-      <div id="members-list"><em>Chargement...</em></div>
-      <div class="invite-row" id="invite-row" style="display:none">
+      <div id="members-list" class="mt-1"><em class="text-muted">Chargement...</em></div>
+      <div class="invite-row mt-2" id="invite-row" style="display:none">
         <input type="email" id="invite-email" placeholder="Email à inviter">
         <button onclick="inviteMember()">Inviter</button>
       </div>
     </div>
 
     <!-- Formulaire nouvelle tâche (owner seulement) -->
-    <div class="form-card" id="task-form-section" style="display:none">
+    <div class="card" id="task-form-section" style="display:none">
       <h3>➕ Nouvelle tâche</h3>
-      <form id="task-form">
-        <div class="form-group"><label>Titre *</label><input type="text" id="task-title" required></div>
-        <div class="form-group"><label>Description</label><textarea id="task-description" rows="2"></textarea></div>
+      <form id="task-form" class="mt-1">
+        <div class="form-group">
+          <label>Titre *</label>
+          <input type="text" id="task-title" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="task-description" rows="2"></textarea>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label>Priorité *</label>
@@ -92,10 +63,10 @@
       </form>
     </div>
 
-    <!-- Filtrage & Recherche (F6) -->
-    <div class="filter-card">
+    <!-- Filtrage & Recherche -->
+    <div class="card">
       <h3>🔍 Filtrer les tâches</h3>
-      <div class="filter-row">
+      <div class="filter-row mt-1">
         <div class="form-group">
           <label>Recherche</label>
           <input type="text" id="filter-search" placeholder="Titre ou description...">
@@ -122,21 +93,20 @@
           <label>Membre</label>
           <select id="filter-member"><option value="">Tous</option></select>
         </div>
-        <div class="form-group">
-          <label>&nbsp;</label>
-          <button id="filter-reset" style="width:100%">↺ Réinitialiser</button>
+        <div class="form-group" style="display:flex;align-items:flex-end">
+          <button id="filter-reset" class="btn-outline" style="width:100%">↺ Réinitialiser</button>
         </div>
       </div>
     </div>
 
-    <!-- Liste des tâches -->
-    <!-- Fil d'activité (F9) -->
-    <div class="activity-section" id="activity-section">
+    <!-- Fil d'activité -->
+    <div class="card" id="activity-section">
       <h3>📋 Historique des activités</h3>
-      <div id="activity-feed"><em>Chargement...</em></div>
+      <div id="activity-feed" class="mt-1"><em class="text-muted">Chargement...</em></div>
     </div>
 
-    <div id="tasks-list"><em>Chargement...</em></div>
+    <!-- Liste des tâches -->
+    <div id="tasks-list"><em class="text-muted">Chargement...</em></div>
     <div id="pagination"></div>
   </div>
 
@@ -161,8 +131,12 @@
         }
         document.getElementById('members-list').innerHTML = members.map(m => `
           <div class="member-item">
-            <span>👤 <strong>${m.fullName}</strong> — ${m.email} <small>(${m.role === 'owner' ? 'Créateur' : 'Membre'})</small></span>
-            ${isOwner && m.role !== 'owner' ? `<button onclick="removeMember('${projectId}', '${m._id}')">Retirer</button>` : ''}
+            <span>👤 <strong>${m.fullName}</strong> — ${m.email}
+              <small class="text-muted">(${m.role === 'owner' ? 'Créateur' : 'Membre'})</small>
+            </span>
+            ${isOwner && m.role !== 'owner'
+              ? `<button class="btn-danger" style="padding:.3rem .7rem;font-size:.8rem" onclick="removeMember('${projectId}','${m._id}')">Retirer</button>`
+              : ''}
           </div>
         `).join('');
       } catch (err) { console.error(err); }

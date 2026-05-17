@@ -3,10 +3,19 @@ function checkSession() {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
+  const isAuthPage = window.location.pathname.includes('login') || window.location.pathname.includes('register');
+
   if (!token) {
-    if (!window.location.pathname.includes('login') && !window.location.pathname.includes('register')) {
+    // Pas connecté → rediriger vers login si page protégée
+    if (!isAuthPage) {
       window.location.href = 'login.html';
     }
+    return;
+  }
+
+  // Déjà connecté → rediriger vers index si on essaie d'accéder à login/register
+  if (isAuthPage) {
+    window.location.href = 'index.html';
     return;
   }
 
