@@ -30,6 +30,15 @@
     .activity-time { color: #aaa; margin-left: 8px; font-size: 0.8rem; }
     .activity-section { background: white; padding: 1.5rem; border-radius: 8px; margin-top: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     nav a { color: #667eea; text-decoration: none; margin-right: 1rem; }
+    .notif-wrapper { position: relative; display: inline-block; }
+    .notif-bell { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 4px; position: relative; }
+    #notif-badge { background: #dc3545; color: white; border-radius: 50%; font-size: 10px; padding: 1px 5px; position: absolute; top: -4px; right: -4px; display: none; }
+    #notif-dropdown { position: absolute; right: 0; top: 130%; width: 300px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 350px; overflow-y: auto; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .notif-item.unread { background: #f0f4ff; }
+    .notif-msg { font-size: 0.83rem; color: #333; flex: 1; }
+    .notif-read-btn { font-size: 0.75rem; background: #667eea; color: white; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; white-space: nowrap; }
+    .notif-read-label { font-size: 0.75rem; color: #aaa; }
   </style>
 </head>
 <body>
@@ -38,6 +47,10 @@
     <div>
       <a href="index.html">Dashboard</a>
       <a href="projects.html">Projets</a>
+      <div class="notif-wrapper">
+        <button class="notif-bell" onclick="toggleNotifDropdown()" aria-label="Notifications">🔔<span id="notif-badge"></span></button>
+        <div id="notif-dropdown" style="display:none"><div id="notif-list"></div></div>
+      </div>
       <button id="logout-btn">Déconnexion</button>
     </div>
   </nav>
@@ -183,5 +196,6 @@
       if (projectId) loadActivities(projectId);
     });
   </script>
+  <script src="js/notifications.js"></script>
 </body>
 </html>
