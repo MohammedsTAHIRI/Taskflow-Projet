@@ -19,7 +19,7 @@ async function loadDashboard() {
     const priorityLabel = { haute: '🔴 HAUTE', moyenne: '🟡 MOYENNE', basse: '🟢 BASSE' };
 
     container.innerHTML = tasks.map(t => {
-      const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('fr-FR') : 'Sans deadline';
+      const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString('fr-FR') : 'Sans date limite';
       const projectTitle = t.project?.title || 'Projet inconnu';
       const assignee = t.assignedToUser?.fullName || '';
       return `
@@ -40,7 +40,7 @@ async function loadDashboard() {
 
   } catch (err) {
     console.error('Dashboard error:', err);
-    // Si token expiré → rediriger vers login
+    // Si le token est expiré → rediriger vers la page de connexion
     if (err.message && (err.message.includes('Token') || err.message.includes('401') || err.message.includes('Accès refusé'))) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -49,7 +49,7 @@ async function loadDashboard() {
     }
     const container = document.getElementById('ongoing-tasks');
     if (container) container.innerHTML = `<p style="color:var(--danger);padding:.5rem 0">⚠️ ${err.message || 'Impossible de charger les données. Vérifiez que le serveur est lancé.'}</p>`;
-    // Remettre les métriques à 0 si erreur
+    // Remettre les métriques à zéro en cas d'erreur
     ['active-projects','assigned-tasks','completed-tasks','late-tasks'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.textContent = '0';

@@ -16,6 +16,7 @@
         <button class="notif-bell" onclick="toggleNotifDropdown()" aria-label="Notifications">🔔<span id="notif-badge"></span></button>
         <div id="notif-dropdown" style="display:none"><div id="notif-list"></div></div>
       </div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Mode clair/sombre">☀️</button>
       <button id="logout-btn">Déconnexion</button>
     </div>
   </nav>
@@ -58,6 +59,10 @@
             <label>Assigner à</label>
             <select id="assignedTo"><option value="">-- Non assigné --</option></select>
           </div>
+        </div>
+        <div class="form-group">
+          <label>📅 Date limite *</label>
+          <input type="date" id="task-dueDate" required>
         </div>
         <button type="submit">Créer la tâche</button>
       </form>
@@ -110,6 +115,7 @@
     <div id="pagination"></div>
   </div>
 
+  <script src="js/theme.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/tasks.js"></script>

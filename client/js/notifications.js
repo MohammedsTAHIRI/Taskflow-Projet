@@ -1,4 +1,4 @@
-// F10 — Système de notifications côté client
+//Système de notifications côté client
 const NOTIF_ARCHIVE_KEY = 'taskflow_notifications_read';
 
 let notifications = [];
@@ -83,7 +83,7 @@ function toggleNotifDropdown() {
 
 function initNotifications() {
   fetchNotifications();
-  // Polling toutes les 30 secondes (F10)
+  // Interrogation du serveur toutes les 30 secondes (F10)
   setInterval(fetchNotifications, 30000);
 }
 

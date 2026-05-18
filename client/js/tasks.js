@@ -74,7 +74,16 @@ function renderTasks(tasks) {
         <span class="status-badge">${t.status}</span>
       </div>
       ${t.description ? `<div class="task-meta"><em>${t.description}</em></div>` : ''}
-      <div class="task-meta">👤 ${t.assignedTo ? t.assignedTo.fullName : 'Non assigné'}${t.dueDate ? ` · 📅 ${new Date(t.dueDate).toLocaleDateString('fr-FR')}` : ''}</div>
+      <div class="task-meta">
+        👤 ${t.assignedTo ? t.assignedTo.fullName : 'Non assigné'}
+        ${t.dueDate ? (() => {
+          const due = new Date(t.dueDate);
+          const isLate = due < new Date() && t.status !== 'terminé';
+          return ` · <span style="color:${isLate ? 'var(--danger)' : 'var(--text-muted)'}">
+            📅 ${due.toLocaleDateString('fr-FR')}${isLate ? ' ⚠️ En retard' : ''}
+          </span>`;
+        })() : ''}
+      </div>
       <div class="task-actions">
         <select onchange="updateStatus('${t._id}', this.value)">
           <option ${t.status==='à faire'?'selected':''}>à faire</option>
@@ -138,7 +147,8 @@ function saveDraft() {
     title: document.getElementById('task-title')?.value || '',
     description: document.getElementById('task-description')?.value || '',
     priority: document.getElementById('task-priority')?.value || 'moyenne',
-    assignedTo: document.getElementById('assignedTo')?.value || ''
+    assignedTo: document.getElementById('assignedTo')?.value || '',
+    dueDate: document.getElementById('task-dueDate')?.value || ''
   };
   localStorage.setItem(DRAFT_KEY(), JSON.stringify(draft));
 }
@@ -159,6 +169,7 @@ function loadDraft() {
       document.getElementById('task-description').value = draft.description || '';
       document.getElementById('task-priority').value = draft.priority || 'moyenne';
       if (draft.assignedTo) document.getElementById('assignedTo').value = draft.assignedTo;
+      if (draft.dueDate) document.getElementById('task-dueDate').value = draft.dueDate;
     } else {
       localStorage.removeItem(DRAFT_KEY());
     }
@@ -173,11 +184,11 @@ function setupForm() {
   const form = document.getElementById('task-form');
   if (!form) return;
 
-  // Charger brouillon éventuel
+  // Charger le brouillon éventuel
   loadDraft();
 
-  // Sauvegarde automatique sur chaque input (F7)
-  ['task-title', 'task-description', 'task-priority', 'assignedTo'].forEach(id => {
+  // Sauvegarde automatique à chaque saisie (F7)
+  ['task-title', 'task-description', 'task-priority', 'assignedTo', 'task-dueDate'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', saveDraft);
     document.getElementById(id)?.addEventListener('change', saveDraft);
   });
@@ -193,7 +204,8 @@ function setupForm() {
           priority: document.getElementById('task-priority').value,
           status: 'à faire',
           project: currentProjectId,
-          assignedTo: document.getElementById('assignedTo').value || undefined
+          assignedTo: document.getElementById('assignedTo').value || undefined,
+          dueDate: document.getElementById('task-dueDate')?.value || undefined
         })
       });
       clearDraft();   // Supprimer le brouillon après soumission réussie

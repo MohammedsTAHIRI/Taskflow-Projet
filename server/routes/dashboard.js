@@ -9,7 +9,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user.userId);
 
-    // جلب كل مشاريع المستخدم (owner أو member)
+    //les projets (owner ou member)
     const userProjects = await Project.find({
       $or: [{ owner: userId }, { members: userId }]
     }).select('_id status');
@@ -17,7 +17,6 @@ router.get('/', authMiddleware, async (req, res) => {
     const projectIds = userProjects.map(p => p._id);
     const activeProjectIds = userProjects.filter(p => p.status === 'actif').map(p => p._id);
 
-    // 1. عدد المشاريع النشطة
     const activeProjects = activeProjectIds.length;
 
     // 2+3+4: tâches assignées à l'utilisateur connecté uniquement
@@ -59,7 +58,14 @@ router.get('/', authMiddleware, async (req, res) => {
           }
         }
       },
-      { $sort: { priorityNum: -1, dueDate: 1 } },
+      {
+        $addFields: {
+          dueDateSorted: {
+            $ifNull: ['$dueDate', new Date('9999-12-31')]
+          }
+        }
+      },
+      { $sort: { dueDateSorted: 1, priorityNum: -1 } },
       { $limit: 10 },
       {
         $lookup: {

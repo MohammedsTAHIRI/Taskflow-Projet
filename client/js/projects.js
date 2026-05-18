@@ -23,7 +23,7 @@ function renderProjects(projects) {
         <h3>${p.title}</h3>
         <p>${p.description || 'Pas de description'} —
            <strong>${p.status}</strong> —
-           ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Sans deadline'}</p>
+           ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Sans date limite'}</p>
       </div>
       <div class="project-actions">
         <a href="tasks.html?project=${p._id}" class="btn btn-tasks">Voir les tâches</a>
