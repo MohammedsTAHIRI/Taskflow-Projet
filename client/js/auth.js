@@ -6,14 +6,14 @@ function checkSession() {
   const isAuthPage = window.location.pathname.includes('login') || window.location.pathname.includes('register');
 
   if (!token) {
-    // Pas connecté → rediriger vers login si page protégée
+    // Non connecté → rediriger vers la connexion si page protégée
     if (!isAuthPage) {
       window.location.href = 'login.html';
     }
     return;
   }
 
-  // Déjà connecté → rediriger vers index si on essaie d'accéder à login/register
+  // Déjà connecté → rediriger vers l'accueil si tentative d'accès à connexion/inscription
   if (isAuthPage) {
     window.location.href = 'index.html';
     return;
@@ -65,7 +65,7 @@ function logout() {
   window.location.href = 'login.html';
 }
 
-// Initialisation
+// Initialisation de la page
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
 

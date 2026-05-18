@@ -1,14 +1,15 @@
 # TaskFlow — Application de Gestion de Projets Collaboratifs
 
 > Projet de fin de module · JavaScript · Express · MongoDB · Docker · GitHub  
-> Date de rendu : **20 mai 2026**
 
 ---
 
 ## 📋 Présentation
 
 **TaskFlow** est une application web fullstack de gestion de projets collaboratifs.  
-Elle permet aux utilisateurs de créer des projets, d'y inviter des membres, de gérer des tâches avec priorités et statuts, et de suivre l'activité de l'équipe en temps réel via un système de notifications.
+Elle permet aux utilisateurs de créer des projets, d'y inviter des membres, de gérer des tâches avec priorités, dates limites et statuts, et de suivre l'activité de l'équipe en temps réel via un système de notifications.
+
+L'interface est entièrement en **français** et propose un **mode clair / sombre** (light/dark mode) basculable et persistant.
 
 ---
 
@@ -73,15 +74,16 @@ taskflow/
 │   ├── projects.html           # Liste des projets
 │   ├── tasks.html              # Gestion des tâches
 │   ├── css/
-│   │   └── style.css           # Styles globaux (palette #222831 / #00ADB5)
+│   │   └── style.css           # Styles globaux + variables light/dark
 │   └── js/
 │       ├── api.js              # Client HTTP (fetch + JWT auto)
 │       ├── auth.js             # Gestion session, login, register, logout
-│       ├── dashboard.js        # Métriques + tâches en cours
+│       ├── dashboard.js        # Métriques + tâches en cours (tri date/priorité)
 │       ├── projects.js         # CRUD projets + gestion membres
-│       ├── tasks.js            # CRUD tâches + filtres + brouillons
+│       ├── tasks.js            # CRUD tâches + filtres + brouillons + date limite
 │       ├── activities.js       # Fil d'activité
-│       └── notifications.js   # Polling + badge + archivage localStorage
+│       ├── notifications.js    # Polling + badge + archivage localStorage
+│       └── theme.js            # Basculement light/dark mode (localStorage)
 └── server/                     # Backend Node.js / Express
     ├── Dockerfile
     ├── package.json
@@ -91,16 +93,16 @@ taskflow/
     ├── models/
     │   ├── User.js             # Schéma utilisateur (bcrypt 10 rounds)
     │   ├── Project.js          # Schéma projet (cascade delete)
-    │   ├── Task.js             # Schéma tâche (enum priorité/statut)
+    │   ├── Task.js             # Schéma tâche (enum priorité/statut + dueDate)
     │   ├── Activity.js         # Schéma activité
     │   └── Notification.js     # Schéma notification
     ├── routes/
     │   ├── auth.js             # POST /api/auth/register|login
     │   ├── dashboard.js        # GET  /api/dashboard (agrégation MongoDB)
     │   ├── projects.js         # CRUD /api/projects + membres
-    │   ├── tasks.js            # CRUD /api/tasks + PATCH statut
+    │   ├── tasks.js            # CRUD /api/tasks + PATCH statut + dueDate
     │   ├── activities.js       # GET  /api/projects/:id/activities
-    │   └── notifications.js   # GET|PATCH /api/notifications
+    │   └── notifications.js    # GET|PATCH /api/notifications
     ├── middleware/
     │   ├── auth.js             # Vérification JWT Bearer
     │   ├── roles.js            # requireOwner / requireMember
@@ -133,6 +135,7 @@ taskflow/
 ### F3 — Gestion des tâches
 - CRUD sur `/api/tasks/:id`
 - Champs obligatoires : titre, priorité (`basse/moyenne/haute`), statut (`à faire/en cours/terminé`)
+- **Date limite (`dueDate`) obligatoire** à la création — affichée et stockée côté serveur
 - Validation `enum` dans le schéma Mongoose et dans le middleware de validation
 - Route `GET /api/projects/:id/tasks` — toutes les tâches d'un projet
 - Route `PATCH /api/tasks/:id/status` — mise à jour du statut uniquement
@@ -149,7 +152,8 @@ taskflow/
 - Métriques calculées côté serveur : projets actifs, tâches assignées, terminées, en retard
 - Tâche en retard = `dueDate` dépassée ET statut ≠ `terminé`
 - Pipeline d'agrégation MongoDB (`$match`, `$group`, `$addFields`, `$sort`)
-- Tâches en cours triées par priorité décroissante puis date limite croissante
+- **Tâches en cours triées par date limite croissante, puis par priorité décroissante**
+  - Les tâches sans date limite apparaissent toujours en dernier
 - Chargement en un seul appel Axios au `DOMContentLoaded`
 
 ### F6 — Filtrage, recherche et pagination
@@ -187,6 +191,13 @@ taskflow/
 - Archivage des notifications lues dans `localStorage`
 - Polling automatique toutes les **30 secondes** avec `setInterval`
 
+### F11 — Mode clair / sombre (Light / Dark Mode)
+- Basculement via un bouton ☀️/🌙 présent dans la navbar de chaque page
+- Thème appliqué **immédiatement** avant le rendu (aucun flash blanc)
+- Préférence persistante dans `localStorage` (`taskflow_theme`)
+- Variables CSS (`:root` / `body.light`) pour toute la palette de couleurs
+- Support complet sur toutes les pages : `index.html`, `projects.html`, `tasks.html`, `login.html`, `register.html`
+
 ---
 
 ## 🔀 Workflow Git
@@ -203,7 +214,8 @@ main          ← code validé uniquement (via PR depuis develop)
         ├── feature/brouillons
         ├── feature/membres
         ├── feature/activites
-        └── feature/notifications
+        ├── feature/notifications
+        └── feature/light-mode
 ```
 
 - Toutes les fusions vers `develop` se font via **Pull Request** (relecture par ≥ 1 membre)
@@ -229,7 +241,7 @@ main          ← code validé uniquement (via PR depuis develop)
 | GET | `/api/projects/:id/activities` | Fil d'activité | ✅ member |
 | GET | `/api/tasks` | Tâches assignées à moi | ✅ |
 | GET | `/api/tasks/project/:id` | Tâches filtrées/paginées | ✅ member |
-| POST | `/api/tasks` | Créer une tâche | ✅ owner |
+| POST | `/api/tasks` | Créer une tâche (avec dueDate) | ✅ owner |
 | PUT | `/api/tasks/:id` | Modifier une tâche | ✅ owner |
 | DELETE | `/api/tasks/:id` | Supprimer une tâche | ✅ owner |
 | PATCH | `/api/tasks/:id/status` | Changer le statut | ✅ owner/assigned |
@@ -262,4 +274,3 @@ main          ← code validé uniquement (via PR depuis develop)
 | `PORT` | Port du serveur Express | `5000` |
 
 > Le fichier `.env` est listé dans `.gitignore` et ne sera **jamais** commité.
-

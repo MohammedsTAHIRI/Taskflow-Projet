@@ -1,4 +1,4 @@
-// F9 — Fil d'activité
+//Fil d'activité du projet
 const LABELS = {
   task_created:       (m) => `a créé la tâche "${m.taskTitle}"`,
   task_deleted:       (m) => `a supprimé la tâche "${m.taskTitle}"`,
