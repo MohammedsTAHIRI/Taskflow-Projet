@@ -47,7 +47,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // POST — notification si tâche assignée (F10)
 router.post('/', authMiddleware, validateTask, async (req, res) => {
   try {
-    const { title, description, priority, status, project, assignedTo } = req.body;
+    const { title, description, priority, status, project, assignedTo, dueDate } = req.body;
     const proj = await Project.findById(project);
     if (!proj) return res.status(404).json({ message: 'Projet non trouvé' });
     if (proj.owner.toString() !== req.user.userId)
@@ -56,7 +56,7 @@ router.post('/', authMiddleware, validateTask, async (req, res) => {
       const ok = proj.owner.toString() === assignedTo || proj.members.some(m => m.toString() === assignedTo);
       if (!ok) return res.status(400).json({ message: 'Utilisateur non membre du projet' });
     }
-    const task = new Task({ title, description, priority, status, project, assignedTo: assignedTo || null });
+    const task = new Task({ title, description, priority, status, project, assignedTo: assignedTo || null, dueDate: dueDate || null });
     await task.save();
     await logActivity('task_created', project, req.user.userId, { taskTitle: title });
 
