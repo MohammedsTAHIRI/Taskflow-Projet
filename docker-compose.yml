@@ -5,8 +5,17 @@ services:
     container_name: taskflow-mongo
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: taskflow_admin # changer en production
+      MONGO_INITDB_ROOT_PASSWORD: Xk9gfdhd_fhgdsh2026 # changer en production
+      MONGO_INITDB_DATABASE: taskflow
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   server:
     build: ./server
@@ -16,11 +25,13 @@ services:
     env_file:
       - ./server/.env
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     volumes:
       - ./server:/app
       - /app/node_modules
     command: npm run dev
+    restart: on-failure
 
 volumes:
   mongo-data:
